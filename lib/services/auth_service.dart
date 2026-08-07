@@ -1,12 +1,42 @@
+import 'package:flutter/material.dart';
 import '../models/user_model.dart';
+import 'api_service.dart';
 
-class AuthService {
 
-  AuthService._();
-  static final AuthService instance = AuthService._();
+class AuthService extends ChangeNotifier{
 
-  final allUsers = UserModel.allUsers;
   UserModel? currentUser;
+  String? _token;
+  String? get token => _token;
+  UserModel? get user => currentUser;
+  bool get isLoggedIn => token != null;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+  final ApiService apiService = ApiService();
+
+  Future<bool> login(String email, String password) async{
+    _isLoading = true;
+    try{
+      final response = await apiService.post(
+        "/login"
+        {
+          "email": email,
+          "password": password,
+        }
+      );
+      _token = response["token"];
+      currentUser = UserModel.fromJson(response["user"]);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+
+    } catch (e){
+      return false;
+    }finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   UserModel? login(String email, String password) {
     try {
@@ -24,48 +54,30 @@ class AuthService {
   }
   void logout(){
     currentUser = null;
+     _token = null;
+    notifyListeners();
   }
 
-  bool get isLoggedIn => currentUser != null;
-  UserModel? get loggedInUser => currentUser;
 
-  bool register({
+  Future<bool> register(Map<String, dynamic> data) async{
+    _isLoading = true;
 
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String password,
-    required String phoneNumber,
-    required String location,
-    required String address,
+    try {
+      final response = await apiService.post( "/register", data, );
+      _token = response["token"];
+      currentUser = UserModel.fromJson(response["user"]);
+      _isLoading = false;
+      notifyListeners();
 
-  }) {
+      return true;
 
-    final exists = allUsers.any(
-      (user) => user.email == email,
-    );
-
-    if (exists) {
+    } catch (e) {
       return false;
+    }finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    allUsers.add(
-      UserModel(
-        id: 2, //TO DO: autoincrement
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        password: password,
-        phoneNumber: phoneNumber,
-        location: location,
-        address: address,
-      ),
-    );
-    return true;
   }
-
-  List<UserModel> get users => allUsers;
-    
-  }
+}
 
 

@@ -32,6 +32,19 @@ class CartService extends ChangeNotifier{
   int get itemCount => cart.length;
   bool get isEmpty => cart.isEmpty;
 
+  void increaseQty(CartItem item){
+    item.quantity++;
+    notifyListeners();
+  }
+  void decreaseQty(CartItem item){
+    if(item.quantity > 1){
+      item.quantity--;
+    }else{
+      cart.remove(item);
+    }
+    notifyListeners();
+  }
+
   void clearCart() {
     cart.clear();
     notifyListeners();

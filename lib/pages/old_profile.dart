@@ -1,131 +1,38 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../models/user_model.dart';
-import 'auth/login.dart';
+import 'package:online_bookstore/widgets/app_bar.dart';
 
-class ProfilePage extends StatefulWidget {
+
+class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-
-  final authService = AuthService.instance;
-
-  @override
   Widget build(BuildContext context) {
-
-    final user = authService.loggedInUser;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Profile"),
-      ),
-      body: user == null ? buildGuestView() : buildUserView(user),
-    );
-  }
-
-  Widget buildGuestView() {
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+      appBar: const AppBarWidget(title: 'Profile'),
+      body: const Padding(
+        padding: EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.account_circle,
-              size: 100,
-              color: Colors.grey,
-            ),
-
-            const SizedBox(height: 20),
-            const Text(
-              "You're browsing as a guest",
-              style: TextStyle( fontSize: 22, fontWeight: FontWeight.bold, ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 10),
-            const Text(
-              "Sign in to access your orders, saved books and checkout faster.",
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const LoginPage(),
-                    ),
-                  );
-                  setState(() {});
-                },
-                child: const Text("Login"),
-              ),
+            ProfileHeader(),
+            SizedBox(height: 20),
+            Expanded(
+              child: ProfileDetails(),
             ),
           ],
         ),
       ),
     );
   }
-
-  // Pulled in from the old profile.dart: same ProfileHeader + ProfileDetails
-  // layout, now fed by the real logged-in UserModel instead of hardcoded
-  // strings.
-  Widget buildUserView(user) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          ProfileHeader(
-            firstName: user.firstName,
-            lastName: user.lastName,
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ProfileDetails(user: user),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.logout),
-            label: const Text("Logout"),
-            onPressed: () {
-              authService.logout();
-              setState(() {});
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Logged out successfully"),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// Pulled in from the old profile.dart, except firstName/lastName are now
-// passed in instead of hardcoded.
 class ProfileHeader extends StatelessWidget {
-  final String firstName;
-  final String lastName;
-
-  const ProfileHeader({
-    super.key,
-    required this.firstName,
-    required this.lastName,
-  });
+  const ProfileHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const String firstName = "Naka";
+    const String lastName = "Mukasa";
+
     return Column(
       children: [
         const CircleAvatar(
@@ -134,48 +41,31 @@ class ProfileHeader extends StatelessWidget {
           child: Icon(Icons.person, size: 50, color: Colors.indigo),
         ),
         const SizedBox(height: 12),
-        Text(
+        const Text(
           "$firstName $lastName",
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 }
 
-// Now takes the real UserModel in via its constructor instead of using
-// its own hardcoded placeholder strings.
 class ProfileDetails extends StatefulWidget {
-  final UserModel user;
-
-  const ProfileDetails({super.key, required this.user});
+  const ProfileDetails({super.key});
 
   @override
   State<ProfileDetails> createState() => _ProfileDetailsState();
 }
 
 class _ProfileDetailsState extends State<ProfileDetails> {
-  // Read once from widget.user when this widget is first created, then
-  // held here so edits (via setState) can change what's displayed
-  // without touching the UserModel itself.
-  late String firstName;
-  late String lastName;
-  late String email;
-  late String phoneNumber;
+  
+  String firstName = "Naka";
+  String lastName = "Mukasa";
+  String email = "naka.mukasa@example.com";
+  String phoneNumber = "+256 700 000 000";
   String password = "********"; // never store/display the real password here
-  late String address;
-  late String location;
-
-  @override
-  void initState() {
-    super.initState();
-    firstName = widget.user.firstName;
-    lastName = widget.user.lastName;
-    email = widget.user.email;
-    phoneNumber = widget.user.phoneNumber;
-    address = widget.user.address;
-    location = widget.user.location;
-  }
+  String address = "123 Main St";
+  String location = "Westlands";
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +165,7 @@ class _ProfileDetailsState extends State<ProfileDetails> {
     );
   }
 
-
+  
   void _showChangePasswordDialog() {
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
